@@ -7,17 +7,19 @@ class Simulator:
     def __init__(self):
         pass
         
-    def set_system(self, system, frame_frequency=None):
+    def set_system(self, system, frame_frequency=None, n_truncate=None):
         """register the quantum system to be simulated
         Args:
             system (System) : class for the target quantum system
             frame_frequency (float) : rotation frequency of the system simulating the time evolution
+            n_truncate (int) : maximum excitation number to be simulated
         """
-        system.compile(frame_frequency)        
+        system.compile(frame_frequency,n_truncate)
         self.dim = system.dim
         self.static_hamiltonian = system.static_hamiltonian_on_frame
         self.operators = system.dynamic_operators_on_frame
         self.detunings = system.dynamic_detunings
+        self.stopflags = system.dynamic_stopflags
         self.frame = system.frame_on_frame
         self.comp = system.comp
         
@@ -28,7 +30,10 @@ class Simulator:
             step (float) : time step width for simulation (ns)
         """
         for port in sequence.port_list:
-            port.if_freq = self.detunings[port.name]
+            if self.stopflags[port.name]:
+                port.if_freq = 0
+            else:
+                port.if_freq = self.detunings[port.name]
             port.DAC_STEP = step
         sequence.compile()
         
