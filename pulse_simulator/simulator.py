@@ -3,24 +3,24 @@ import scipy.linalg as lin
 
 class Simulator:
     """Class for computing the time-evolution with the arbitral pulse sequence"""
-    
+
     def __init__(self):
         pass
-        
+
     def set_system(self, system, frame_frequency=None):
         """register the quantum system to be simulated
         Args:
             system (System) : class for the target quantum system
             frame_frequency (float) : rotation frequency of the system simulating the time evolution
         """
-        system.compile(frame_frequency)        
+        system.compile(frame_frequency)
         self.dim = system.dim
         self.static_hamiltonian = system.static_hamiltonian_on_frame
         self.operators = system.dynamic_operators_on_frame
         self.detunings = system.dynamic_detunings
         self.frame = system.frame_on_frame
         self.comp = system.comp
-        
+
     def set_sequence(self, sequence, step=0.1, visualize=False):
         """register the pulse sequence to be simulated
         Args:
@@ -31,10 +31,10 @@ class Simulator:
             port.if_freq = self.detunings[port.name]
             port.DAC_STEP = step
         sequence.compile()
-        
+
         if visualize:
             sequence.draw(baseband=True)
-        
+
         self.waveforms = {}
         for port in sequence.port_list:
             self.waveforms[port.name] = (port.waveform.real, port.waveform.imag)
@@ -55,7 +55,7 @@ class Simulator:
                 for waveform, operator in zip(waveforms, operators):
                     tmp += waveform[i]*operator
             return tmp
-        
+
         def compare_waveform(i,j):
             for key in self.operators.keys():
                 waveforms = self.waveforms[key]
@@ -63,7 +63,7 @@ class Simulator:
                     if waveform[i] != waveform[j]:
                         return False
             return True
-        
+
         def precompile(time, ith_hamiltonian):
             h0 = ith_hamiltonian(0)
             i_list = [0]
